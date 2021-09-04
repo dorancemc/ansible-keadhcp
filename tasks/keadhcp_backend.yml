@@ -1,0 +1,42 @@
+---
+
+- name: kea_server | Installing KeaDHCP Pre-Reqs
+  apt:
+    name: [python3-pymysql]
+    state: present
+  become: true
+  register: result
+  until: result is succeeded
+
+- name: kea_server | Checking If DB Tables Exist
+  mysql_query:
+    login_host: "{{ kea_dhcp_db_host }}"
+    login_user: "{{ kea_dhcp_db_user }}"
+    login_password: "{{ kea_dhcp_db_pass }}"
+    query:
+    - "SELECT count(*) as value FROM information_schema.tables WHERE table_name='hosts' AND table_schema='{{ kea_dhcp_db_name }}';"
+  no_log: true
+  register: kea_tables
+  tags: dhcpbackend
+
+- name: Copy file db schema
+  copy:
+    src: keadhcp.schema.mysql.sql
+    dest: /tmp/keadhcp.schema.mysql.sql
+  when:
+    - (kea_tables.query_result[0][0]['value'] == 0)
+  tags: dhcpbackend
+
+- name: kea_server | importing db schema
+  mysql_db:
+    state: import
+    name: "{{ kea_dhcp_db_name }}"
+    login_host: "{{ kea_dhcp_db_host }}"
+    login_user: "{{ kea_dhcp_db_user }}"
+    login_password: "{{ kea_dhcp_db_pass }}"
+    target: /tmp/keadhcp.schema.mysql.sql
+  no_log: true
+  when:
+    - (kea_tables.query_result[0][0]['value'] == 0)
+  tags: dhcpbackend
+

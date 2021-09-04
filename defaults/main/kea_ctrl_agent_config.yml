@@ -1,0 +1,22 @@
+---
+kea_ctrl_agent_config:
+  Control-agent:
+    http-host: 0.0.0.0
+    http-port: 8080
+    control-sockets:
+      dhcp4:
+        socket-type: unix
+        socket-name: "/tmp/kea-dhcp4-ctrl.sock"
+      # dhcp6:
+      #   socket-type: unix
+      #   socket-name: "/tmp/kea-dhcp6-ctrl.sock"
+      d2:
+        socket-type: unix
+        socket-name: "/tmp/kea-dhcp-ddns-ctrl.sock"
+    hooks-libraries: []
+    loggers:
+    - name: kea-ctrl-agent
+      severity: "{{ kea_dhcp_loggers_severity }}"
+      debuglevel: "{{ kea_dhcp_loggers_level }}"
+      output_options:
+        - output: stdout

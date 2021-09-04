@@ -1,0 +1,34 @@
+---
+
+# keadhcp
+- include_tasks: keadhcp_backend.yml
+
+- include_tasks: keadhcp_config.yml
+  vars:
+    keadhcp_service: keadhcp4
+    service_version: "{{ keadhcp_version }}"
+    service_config: kea-dhcp4.conf
+    docker_image: "{{ keadhcp4_docker_image }}"
+    docker_name: "{{ keadhcp4_docker_container_name }}"
+  tags:
+  - dhcp4
+
+- include_tasks: keadhcp_config.yml
+  vars:
+    keadhcp_service: keaddns
+    service_version: "{{ keadhcp_version }}"
+    service_config: kea-dhcp-ddns.conf
+    docker_image: "{{ keaddns_docker_image }}"
+    docker_name: "{{ keaddns_docker_container_name }}"
+  tags:
+  - ddns
+
+- include_tasks: keadhcp_config.yml
+  vars:
+    keadhcp_service: keacagent
+    service_version: "{{ keadhcp_version }}"
+    service_config: kea-ctrl-agent.conf
+    docker_image: "{{ keacagent_docker_image }}"
+    docker_name: "{{ keacagent_docker_container_name }}"
+  tags:
+  - keacagent

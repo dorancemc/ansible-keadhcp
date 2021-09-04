@@ -1,0 +1,21 @@
+---
+kea_dhcp_ddns_config:
+  DhcpDdns:
+    ip-address: 127.0.0.1
+    port: 53001
+    control-socket:
+      socket-type: unix
+      socket-name: /tmp/kea-dhcp-ddns-ctrl.sock
+    tsig-keys: []
+    forward-ddns:
+      ddns-domains:
+        - name: "{{ dhcp_pri_domain_name }}."
+          dns-servers:
+            - ip-address: 127.0.0.1
+              port: 5301
+    loggers:
+      - name: kea-dhcp-ddns
+        severity: "{{ kea_dhcp_loggers_severity }}"
+        debuglevel: "{{ kea_dhcp_loggers_level }}"
+        output_options:
+          - output: stdout

@@ -1,0 +1,48 @@
+---
+
+- name: Creates directory "{{ keadhcp4_config_dir }}"
+  become: true
+  file:
+    path: "{{ keadhcp4_config_dir }}"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+  tags:
+  - dhcp4
+  - ddns
+  - keacagent
+
+- name: kea_server | configuring {{ keadhcp_service }}
+  template:
+    src: "{{ 'etc/keadhcp/' + item + '.j2' }}"
+    dest: "{{ keadhcp4_config_dir + item }}"
+    owner: root
+    group: root
+  become: true
+  register: kea_configured
+  loop:
+    - "{{ service_config }}"
+  tags:
+  - dhcp4
+  - ddns
+  - keacagent
+
+- name: "Start/Restart {{ keadhcp_service }} {{ service_version }}"
+  become: true
+  docker_container:
+    container_default_behavior: no_defaults
+    image: "{{ docker_image }}"
+    name: "{{ docker_name }}"
+    state: started
+    restart_policy: unless-stopped
+    network_mode: host
+    volumes:
+      - "{{ keadhcp4_config_dir }}:/etc/kea/"
+      - "/var/tmp/:/tmp/"
+    restart: yes
+  when: kea_configured.changed
+  tags:
+  - dhcp4
+  - ddns
+  - keacagent

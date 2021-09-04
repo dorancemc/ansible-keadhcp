@@ -1,0 +1,72 @@
+# https://kea.readthedocs.io/en/latest/
+---
+kea_dhcp_dhcp4_config:
+  Dhcp4:
+    server-tag: "{{ inventory_hostname }}"
+    # config-control:
+    #   config-databases:
+    #     - type: mysql
+    #       name: "{{ kea_dhcp_db_name }}"
+    #       host: "{{ kea_dhcp_db_host }}"
+    #       user: "{{ kea_dhcp_db_user }}"
+    #       password: "{{ kea_dhcp_db_pass }}"
+    hooks-libraries:
+      - library: /usr/lib/x86_64-linux-gnu/kea/hooks/libdhcp_lease_cmds.so
+        parameters: {}
+      - library: /usr/lib/x86_64-linux-gnu/kea/hooks/libdhcp_stat_cmds.so
+      - library: /usr/lib/x86_64-linux-gnu/kea/hooks/libdhcp_mysql_cb.so
+    renew-timer: 1000
+    rebind-timer: 2000
+    interfaces-config:
+      interfaces:
+        - "*"
+      dhcp-socket-type: raw
+    control-socket:
+      socket-type: unix
+      socket-name: /tmp/kea-dhcp4-ctrl.sock
+    lease-database:
+      type: mysql
+      name: "{{ kea_dhcp_db_name }}"
+      host: "{{ kea_dhcp_db_host }}"
+      user: "{{ kea_dhcp_db_user }}"
+      password: "{{ kea_dhcp_db_pass }}"
+    expired-leases-processing:
+      reclaim-timer-wait-time: 10
+      flush-reclaimed-timer-wait-time: 25
+      hold-reclaimed-time: 3600
+      max-reclaim-leases: 100
+      max-reclaim-time: 250
+      unwarned-reclaim-cycles: 5
+    valid-lifetime: 4000
+    # avoid to assign the same ip address on two different nodes (created with the same image)
+    host-reservation-identifiers:
+      - "hw-address"
+    match-client-id: false
+    shared-networks:
+      - name: local.network
+        subnet4:
+          - id: 155
+            subnet: 192.168.243.0/24
+            pools:
+              - pool: "192.168.243.11 - 192.168.243.19"
+            option-data:
+              - name: domain-name-servers
+                data: "192.168.243.220"
+              - name: domain-name
+                data: "{{ dhcp_pri_domain_name }}"
+            #   - name: routers
+            #     data: "192.168.243.1"
+    dhcp-ddns:
+      enable-updates: true
+      qualifying-suffix: "{{ dhcp_pri_domain_name }}"
+      server-ip: 127.0.0.1
+      server-port: 53001
+      max-queue-size: 1024
+      ncr-protocol: UDP
+      ncr-format: JSON
+    loggers:
+      - name: kea-dhcp4
+        severity: "{{ kea_dhcp_loggers_severity }}"
+        debuglevel: "{{ kea_dhcp_loggers_level }}"
+        output_options:
+          - output: stdout

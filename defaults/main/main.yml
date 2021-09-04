@@ -1,0 +1,45 @@
+# https://kea.readthedocs.io/en/kea-1.8.0/index.html
+---
+# Defaults file for keadhcp
+dhcp_pri_domain_name: local.example.com
+
+## Default path for etc files used in containers
+dhcp_basepath: /data
+
+# Defines if Kea DHCP should be configured
+kea_dhcp_config: true
+
+## config dir
+keadhcp4_config_dir: "{{ dhcp_basepath }}/etc/keadhcp/"
+
+## loging
+kea_dhcp_loggers_severity: "INFO" # severity: FATAL, ERROR, WARN, INFO, DEBUG
+kea_dhcp_loggers_level: 0 # 0 - 99
+
+## Defines Kea DHCP services should be enabled
+kea_dhcp_service_state:
+  ddns: true
+  ipv4: true
+  ipv6: false
+
+## Defines Kea DHCP database
+kea_dhcp_db_host: "127.0.0.1"
+kea_dhcp_db_port: 3306
+kea_dhcp_db_user: "mydhcp"
+kea_dhcp_db_name: "mydhcp"
+kea_dhcp_db_pass: "changeme"
+
+# DOCKER
+## keadhcp
+keadhcp_version: 1.8.0
+## keadhcp4
+keadhcp4_docker_image: "dorancemc/keadhcp4:{{ keadhcp_version }}"
+keadhcp4_docker_container_name: keadhcp4
+## keaddns
+keaddns_version: latest
+keaddns_docker_image: "dorancemc/keaddns:{{ keadhcp_version }}"
+keaddns_docker_container_name: keaddns
+## keacagent
+keacagent_version: latest
+keacagent_docker_image: "dorancemc/keacagent:{{ keadhcp_version }}"
+keacagent_docker_container_name: keacagent
